@@ -1,0 +1,72 @@
+name: "lego"
+exp_path: "./output/"
+seed: 0
+
+repr: 
+  max_sh_degree: 3
+
+data:
+  source_path: "D:/data/lego/"
+  eval: 0
+  shuffle: True
+  resolution: -1
+  resolution_scales: [1.0]
+
+trainer:
+  iterations: 30000
+  ckpt_iterations: [7000, 30000]
+  save_iterations: [7000, 30000]
+
+paramOptim:
+  position_lr_init: 0.00016
+  position_lr_final: 0.0000016
+  position_lr_delay_mult: 0.01
+  position_lr_max_steps: 30000
+  feature_lr: 0.0025
+  opacity_lr: 0.05
+  scaling_lr: 0.005
+  rotation_lr: 0.001
+
+structOptim:
+  num_split: 2
+  size_threshold: 20
+  min_opacity: 0.005
+  percent_dense: 0.01
+  densification_interval: 100
+  opacity_reset_interval: 3000
+  densify_from_iter: 500
+  densify_until_iter: 15000
+  densify_grad_threshold: 0.0002
+
+loss:
+  lambda_dssim: 0.2
+
+renderer:
+  background_color: [0,0,0]
+  scaling_modifier: 1.0
+
+recorder:
+  - name: "ema_loss_for_log"
+    value_type: "number"
+    save_intervals: 1000
+  - name: "loss"
+    value_type: "number"
+    save_intervals: 1000
+  - name: "image"
+    value_type: "imageDict"
+    save_iterations: [100,7000,15000]  
+
+checkpoint:
+  use: False
+  path: "./output/lego@20240322-205727/ckpts/7000.pth"
+
+networkGui:
+  use: False
+  host: "127.0.0.1"
+  port: 6009
+  render_modes : ['RGB', 'Alpha', 'Depth', 'Normal', 'Curvature', 'Edge']
+
+render_settings:
+  model_path: "./output/lego@20240322-205727/results/point_cloud/iteration_30000/point_cloud.ply"
+  save_path: "./output/render"
+  render_modes: ['rgb','alpha']

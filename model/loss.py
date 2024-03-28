@@ -1,24 +1,25 @@
-#
-# Copyright (C) 2023, Inria
-# GRAPHDECO research group, https://team.inria.fr/graphdeco
-# All rights reserved.
-#
-# This software is free for non-commercial, research and evaluation use 
-# under the terms of the LICENSE.md file.
-#
-# For inquiries contact  george.drettakis@inria.fr
-#
-
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
+from utils.base import BaseModule
 from math import exp
 
-def l1_loss(network_output, gt):
-    return torch.abs((network_output - gt)).mean()
+class L1WithSSIMLoss(nn.Module, BaseModule):
+    def __init__(self,cfg, logger):
+        nn.Module.__init__(self)  
+        BaseModule.__init__(self, cfg, logger)
 
-def l2_loss(network_output, gt):
-    return ((network_output - gt) ** 2).mean()
+    def forward(self,predict,gt):
+        value = (1.0 - self.lambda_dssim) * l1_loss(predict,gt) + self.lambda_dssim * (1.0 - ssim(predict,gt))
+        self.value = value
+        return value
+
+def l1_loss(pred, gt):
+    return torch.abs((pred - gt)).mean()
+
+def l2_loss(pred, gt):
+    return ((pred - gt) ** 2).mean()
 
 def gaussian(window_size, sigma):
     gauss = torch.Tensor([exp(-(x - window_size // 2) ** 2 / float(2 * sigma ** 2)) for x in range(window_size)])
@@ -61,4 +62,3 @@ def _ssim(img1, img2, window, window_size, channel, size_average=True):
         return ssim_map.mean()
     else:
         return ssim_map.mean(1).mean(1).mean(1)
-
